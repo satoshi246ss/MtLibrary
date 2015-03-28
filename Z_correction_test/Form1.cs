@@ -206,9 +206,9 @@ namespace Z_correction_test
             double theta = JulianDay.SiderealTime(t, lon);
             var m = Eq2AzAltMat(theta, fai);
             var ve = eq_directional_cosine(ra, dec);
-            var v = Vector.Build.Dense(3);
+            //var v = Vector.Build.Dense(3);
 
-            v = m.Multiply(ve);
+            var v = m.Multiply(ve);
             hori_rev_directional_cosine((Vector)v, out az, out alt);
         }
         
@@ -264,11 +264,11 @@ namespace Z_correction_test
             Matrix mz2 = Rotate_Z(-zaz); // 
 
             var v1 = mz1.Multiply(vt);
-            eq_rev_directional_cosine((Vector)v1, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v1, out az_zc, out alt_zc);
             var v2 = my.Multiply(v1);
-            eq_rev_directional_cosine((Vector)v2, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v2, out az_zc, out alt_zc);
             var v3 = mz2.Multiply(v2);
-            eq_rev_directional_cosine((Vector)v3, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v3, out az_zc, out alt_zc);
         }
         /// <summary>
         /// Az軸とAlt軸の直交誤差の補正
@@ -287,12 +287,11 @@ namespace Z_correction_test
               //  mz2 = Rotate_Z(-(90  - az - zaz)); // 
             }
             var v1 = mz1.Multiply(vt);
-            eq_rev_directional_cosine((Vector)v1, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v1, out az_zc, out alt_zc);
             var v2 = my.Multiply(v1);
-            eq_rev_directional_cosine((Vector)v2, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v2, out az_zc, out alt_zc);
             var v3 = mz2.Multiply(v2);
-
-            eq_rev_directional_cosine((Vector)v3, out az_zc, out alt_zc);
+            hori_rev_directional_cosine((Vector)v3, out az_zc, out alt_zc);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -310,7 +309,7 @@ namespace Z_correction_test
             mt2zaz = 130; // Convert.ToDouble(textBox_MT2ZAz.Text);
             mt2zdt = 7.6;// Convert.ToDouble(textBox_MT2ｄZT.Text);
             z_correct(mt2az, mt2alt, mt2zaz, mt2zdt, out az_zc, out alt_zc);
-            s = string.Format("Az:{0},{1}  {2},{3}  ans:{4,0:F1},  {5,0:F1}\n", mt2az, mt2alt, mt2zaz, mt2zdt, az_zc, alt_zc);
+            s = string.Format("Z correct:{0},{1}  {2},{3}  ans:{4,0:F1},  {5,0:F1}\n", mt2az, mt2alt, mt2zaz, mt2zdt, az_zc, alt_zc);
             richTextBox1.AppendText(s);
 
             //MJD
@@ -328,7 +327,7 @@ namespace Z_correction_test
             dtBirth = DateTime.Parse("1899/12/31 12:00:00", cFormat);
             mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
 
-            dtBirth = DateTime.Parse("1978/6/10 12:20:00", cFormat); //UT
+            dtBirth = DateTime.Parse("1978/6/10 21:20:00", cFormat); // JST  //UTC = JST-9h  
             double az, alt;
             Eq2AzAlt(316.166396, 38.499750, 139.5315556, 35.788889, dtBirth, out az, out alt);
 
