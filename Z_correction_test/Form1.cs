@@ -223,10 +223,10 @@ namespace Z_correction_test
             double sinth = Math.Sin(theta * RAD);
             double costh = Math.Cos(theta * RAD);
             m[0, 0] = costh;
-            m[0, 1] = -sinth;
+            m[0, 1] = sinth;
             m[0, 2] = 0;
 
-            m[1, 0] = sinth;
+            m[1, 0] = -sinth;
             m[1, 1] = costh;
             m[1, 2] = 0;
 
@@ -238,17 +238,17 @@ namespace Z_correction_test
             costh = Math.Cos(fai * RAD);
             m2[0, 0] = sinth;
             m2[0, 1] = 0;
-            m2[0, 2] = costh;
+            m2[0, 2] = -costh;
 
             m2[1, 0] = 0;
             m2[1, 1] = 1;
             m2[1, 2] = 0;
 
-            m2[2, 0] = -costh;
+            m2[2, 0] = costh;
             m2[2, 1] = 0;
             m2[2, 2] = sinth;
 
-            return (Matrix)(m.Multiply(m2));
+            return (Matrix)(m2.Multiply(m));
         }
         /// <summary>
         /// Az軸方向と天頂との誤差の補正
@@ -296,6 +296,12 @@ namespace Z_correction_test
 
         private void button1_Click(object sender, EventArgs e)
         {
+            // こんな風に行列を初期化できる
+            var M1 = DenseMatrix.OfArray(new double[,] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 9, 8 } });
+            var v1 = DenseVector.OfArray(new double[] { 1, 2, 3 });
+            var v2 = M1.Multiply(v1);
+            var aaa = M1[0, 1];
+
             double mt2az = Convert.ToDouble(textBox_MT2Az.Text);
             double mt2alt = Convert.ToDouble(textBox_MT2Alt.Text);
             double mt2zaz = 185; // Convert.ToDouble(textBox_MT2ZAz.Text);
@@ -329,7 +335,7 @@ namespace Z_correction_test
 
             dtBirth = DateTime.Parse("1978/6/10 21:20:00", cFormat); // JST  //UTC = JST-9h  
             double az, alt;
-            Eq2AzAlt(316.166396, 38.499750, 139.5315556, 35.788889, dtBirth, out az, out alt);
+            Eq2AzAlt(316.166396, 38.499750, 139.531555556, 35.788889, dtBirth, out az, out alt);
 
 
             s = string.Format("aa:{0}, {1} \n", az,alt);
