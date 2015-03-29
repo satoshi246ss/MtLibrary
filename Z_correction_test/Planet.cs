@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace Z_correction_test
 {
@@ -691,5 +692,246 @@ namespace Z_correction_test
             delta =  Math.Asin(delta);
         }
 
+
+        // 以下、自作ライブリラ
+
+        /// <summary>
+        /// 赤道座標->方向余弦
+        /// </summary>
+        public static Vector eq_directional_cosine(double alfa, double delta)
+        {
+            var v = Vector.Build.Dense(3);
+            //DenseVector ve = ve.Dense(10);
+            const double RAD = Math.PI / 180.0;
+
+            // 赤道座標の方向余弦
+            v[0] = Math.Cos(delta * RAD) * Math.Cos(alfa * RAD);
+            v[1] = Math.Cos(delta * RAD) * Math.Sin(alfa * RAD);
+            v[2] = Math.Sin(delta * RAD);
+
+            return (Vector)v;
+        }
+        /// <summary>
+        /// 赤道座標<-方向余弦
+        /// </summary>
+        public static void eq_rev_directional_cosine(Vector v, out double alfa, out double delta)
+        {
+            const double RAD = Math.PI / 180.0;
+
+            delta = Math.Asin(v[2]) / RAD;
+            alfa = 0;
+            if (Math.Abs(v[0]) < 1e-9)
+            {
+                if (v[1] >= 0) alfa = 90;
+                if (v[1] < 0) alfa = -90;
+            }
+            else
+            {
+                alfa = Math.Atan2(v[1], v[0]) / RAD;
+            }
+
+            while (alfa < 0) alfa += 360;
+            while (alfa >= 360) alfa -= 360;
+        }
+        /// <summary>
+        /// 地平座標->方向余弦
+        /// </summary>
+        public static Vector hori_directional_cosine(double az, double alt)
+        {
+            var v = Vector.Build.Dense(3);
+            //DenseVector ve = ve.Dense(10);
+            const double RAD = Math.PI / 180.0;
+
+            // 地平座標の方向余弦
+            v[0] = Math.Cos(alt * RAD) * Math.Cos(az * RAD);
+            v[1] = -Math.Cos(alt * RAD) * Math.Sin(az * RAD);
+            v[2] = Math.Sin(alt * RAD);
+
+            return (Vector)v;
+        }
+        /// <summary>
+        /// 地平座標<-方向余弦
+        /// </summary>
+        public static void hori_rev_directional_cosine(Vector v, out double az, out double alt)
+        {
+            const double RAD = Math.PI / 180.0;
+
+            alt = Math.Asin(v[2]) / RAD;
+            az = 0;
+            if (Math.Abs(v[0]) < 1e-9)
+            {
+                if (-v[1] >= 0) az = 90;
+                if (-v[1] < 0) az = -90;
+            }
+            else
+            {
+                az = Math.Atan2(-v[1], v[0]) / RAD;
+            }
+
+            while (az < 0) az += 360;
+            while (az >= 360) az -= 360;
+        }
+        /// <summary>
+        /// X軸回転
+        /// </summary>
+        public static Matrix Rotate_X(double theta)
+        {
+            var m = Matrix.Build.Dense(3, 3);
+            const double RAD = Math.PI / 180.0;
+            double sinth = Math.Sin(theta * RAD);
+            double costh = Math.Cos(theta * RAD);
+
+            m[0, 0] = 1;
+            m[0, 1] = 0;
+            m[0, 2] = 0;
+
+            m[1, 0] = 0;
+            m[1, 1] = costh;
+            m[1, 2] = -sinth;
+
+            m[2, 0] = 0;
+            m[2, 1] = sinth;
+            m[2, 2] = costh;
+
+            return (Matrix)m;
+        }
+        /// <summary>
+        /// Y軸回転
+        /// </summary>
+        public static Matrix Rotate_Y(double theta)
+        {
+            var m = Matrix.Build.Dense(3, 3);
+            const double RAD = Math.PI / 180.0;
+            double sinth = Math.Sin(theta * RAD);
+            double costh = Math.Cos(theta * RAD);
+
+            m[0, 0] = costh;
+            m[0, 1] = 0;
+            m[0, 2] = sinth;
+
+            m[1, 0] = 0;
+            m[1, 1] = 1;
+            m[1, 2] = 0;
+
+            m[2, 0] = -sinth;
+            m[2, 1] = 0;
+            m[2, 2] = costh;
+
+            return (Matrix)m;
+        }
+        /// <summary>
+        /// Z軸回転
+        /// </summary>
+        public static Matrix Rotate_Z(double theta)
+        {
+            var m = Matrix.Build.Dense(3, 3);
+            const double RAD = Math.PI / 180.0;
+            double sinth = Math.Sin(theta * RAD);
+            double costh = Math.Cos(theta * RAD);
+
+            m[0, 0] = costh;
+            m[0, 1] = -sinth;
+            m[0, 2] = 0;
+
+            m[1, 0] = sinth;
+            m[1, 1] = costh;
+            m[1, 2] = 0;
+
+            m[2, 0] = 0;
+            m[2, 1] = 0;
+            m[2, 2] = 1;
+
+            return (Matrix)m;
+        }
+        /// <summary>
+        /// 地平座標->赤道座標
+        /// </summary>
+        public static Matrix AzAlt2EqMat(double theta, double fai)
+        {
+            var m = Matrix.Build.Dense(3, 3);
+            var m2 = Matrix.Build.Dense(3, 3);
+            const double RAD = Math.PI / 180.0;
+            double sinth = Math.Sin(theta * RAD);
+            double costh = Math.Cos(theta * RAD);
+            m[0, 0] = costh;
+            m[0, 1] = sinth;
+            m[0, 2] = 0;
+
+            m[1, 0] = -sinth;
+            m[1, 1] = costh;
+            m[1, 2] = 0;
+
+            m[2, 0] = 0;
+            m[2, 1] = 0;
+            m[2, 2] = 1;
+
+            sinth = Math.Sin(fai * RAD);
+            costh = Math.Cos(fai * RAD);
+            m2[0, 0] = sinth;
+            m2[0, 1] = 0;
+            m2[0, 2] = -costh;
+
+            m2[1, 0] = 0;
+            m2[1, 1] = 1;
+            m2[1, 2] = 0;
+
+            m2[2, 0] = costh;
+            m2[2, 1] = 0;
+            m2[2, 2] = sinth;
+
+            return (Matrix)(m2.Multiply(m));
+        }
+        /// <summary>
+        /// 赤道座標->地平座標
+        /// </summary>
+        public static void Eq2AzAlt(double ra, double dec, double lon, double fai, DateTime t, out double az, out double alt)
+        {
+            double theta = JulianDay.SiderealTime(t, lon);
+            var m = Eq2AzAltMat(theta, fai);
+            var ve = eq_directional_cosine(ra, dec);
+            //var v = Vector.Build.Dense(3);
+
+            var v = m.Multiply(ve);
+            hori_rev_directional_cosine((Vector)v, out az, out alt);
+        }
+
+        /// <summary>
+        /// 赤道座標->地平座標
+        /// </summary>
+        public static Matrix Eq2AzAltMat(double theta, double fai)
+        {
+            var m = Matrix.Build.Dense(3, 3);
+            var m2 = Matrix.Build.Dense(3, 3);
+            const double RAD = Math.PI / 180.0;
+            double sinth = Math.Sin(theta * RAD);
+            double costh = Math.Cos(theta * RAD);
+            m[0, 0] = costh;
+            m[0, 1] = sinth;
+            m[0, 2] = 0;
+
+            m[1, 0] = -sinth;
+            m[1, 1] = costh;
+            m[1, 2] = 0;
+
+            m[2, 0] = 0;
+            m[2, 1] = 0;
+            m[2, 2] = 1;
+
+            sinth = Math.Sin(fai * RAD);
+            costh = Math.Cos(fai * RAD);
+            m2[0, 0] = sinth;
+            m2[0, 1] = 0;
+            m2[0, 2] = -costh;
+
+            m2[1, 0] = 0;
+            m2[1, 1] = 1;
+            m2[1, 2] = 0;
+
+            m2[2, 0] = costh;
+            m2[2, 1] = 0;
+            m2[2, 2] = sinth;
+
+            return (Matrix)(m2.Multiply(m));
+        }
     }
 }
