@@ -336,10 +336,15 @@ namespace Z_correction_test
             dtBirth = DateTime.Parse("1978/6/10 21:20:00", cFormat); // JST  //UTC = JST-9h  
             double az, alt;
             Eq2AzAlt(316.166396, 38.499750, 139.531555556, 35.788889, dtBirth, out az, out alt);
-
-
             s = string.Format("aa:{0}, {1} \n", az,alt);
             richTextBox1.AppendText(s);
+
+            dtBirth = DateTime.Parse("1979/9/15 21:00:00", cFormat); // JST  //UTC = JST-9h  
+            double pt1 = Planet.planet_time_jst_datetime(dtBirth);
+            double pt2 = Planet.planet_time(1979, 9, 15, 12, 0, 0);
+            s = string.Format("PT:{0}, {1} \n", pt1, pt2);
+            richTextBox1.AppendText(s);
+
         }
 
     }

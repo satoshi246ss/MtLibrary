@@ -19,12 +19,29 @@ namespace Z_correction_test
         // 時刻引数のラッパ
         // In:時刻 t(JST)
         //---------------------------------------------------------------------------
+        public static double planet_time_jst_datetime(DateTime t)
+        {
+            //MJD
+            double mjd = JulianDay.DateTimeToModifiedJulianDay(t);
+
+            // カルチャ情報を設定する
+            System.Globalization.CultureInfo cFormat = (
+                new System.Globalization.CultureInfo("fr-FR", false)
+            );
+            // 文字列から DateTime の値に変換する
+            DateTime dtBirth = DateTime.Parse("1974/12/31 00:00:00", cFormat); //UT "1974/12/31 00:00:00" - 9H
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+
+            double ans = (mjd - (mjd0+0.375)) / 365.25;  // JSTにするため、時差9hを引く 9/24h=0.375
+            return ans;
+        }
 
         /************************************************************/
         /*** 惑星（太陽・月も）の位置計算に必要な時刻引数を求める ***/
-        /***   ただし、ＵＴ(JST-9H)を代入すること                         ***/
+        /***   ただし、ＵＴ(JST-9H)を代入すること                 ***/
+        /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
         /************************************************************/
-        double planet_time(int year, int month, int day, double hour, double min, double sec)
+        public static double planet_time(int year, int month, int day, double hour, double min, double sec)
         {
             double W, F, Z, J, t, T;
             int X, R, S;
@@ -55,7 +72,7 @@ namespace Z_correction_test
         /***   Ｔ：時刻引数                                        ***/
         /***   長沢　工「天体の位置計算」　Ｐ．２０５参照          ***/
         /*************************************************************/
-        void sun(double T, out double lambda_s, out double r_s)
+        public static void sun(double T, out double lambda_s, out double r_s)
         {
             //必要なパラメータを求める
             double q;
@@ -112,7 +129,7 @@ namespace Z_correction_test
         /***   地球から見た惑星の黄経λ[deg]、黄緯β[deg]         ***/
         /***   長沢　工「天体の位置計算」　Ｐ．２１４参照         ***/
         /************************************************************/
-        void geocentric(double T, double lambda, double B, double r, out double lam, out double beta)
+        public static void geocentric(double T, double lambda, double B, double r, out double lam, out double beta)
         {
             double lambda_s, r_s;	//太陽の幾何学的黄経λｓ[deg]、地心距離ｒｓ[AU]
             double Ac, Bc, Cc;		//地心黄道直交座標系による惑星の位置
@@ -152,7 +169,7 @@ namespace Z_correction_test
 
         //黄道傾角ε[deg]を求める
         //Ｔ：時間引数
-        double obliquity_of_the_ecliptic(double T)
+        public static double obliquity_of_the_ecliptic(double T)
         {
             double epsilon;
             double PI = Math.PI;
@@ -167,7 +184,7 @@ namespace Z_correction_test
         /***   Ｔ：時刻引数                   ***/
         /***   α：赤経[rad]    δ：赤緯[rad] ***/
         /****************************************/
-        void saturn(double T, out double alpha, out double delta)
+        public static void saturn(double T, out double alpha, out double delta)
         {
             double lambda, B, r;	//日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             double N, f, V, q_, r_;	//必要なパラメータ[deg]
@@ -317,7 +334,7 @@ namespace Z_correction_test
         /***   Ｔ：時刻引数                   ***/
         /***   α：赤経[rad]    δ：赤緯[rad] ***/
         /****************************************/
-        void jupiter(double T, out double alpha, out double delta)
+        public static void jupiter(double T, out double alpha, out double delta)
         {
             double lambda, B, r;	//日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             double N, f, V, q_, r_;	//必要なパラメータ[deg]
@@ -449,7 +466,7 @@ namespace Z_correction_test
         /***   Ｔ：時刻引数                   ***/
         /***   α：赤経[rad]    δ：赤緯[rad] ***/
         /****************************************/
-        void venus(double T, out double alpha, out double delta)
+        public static void venus(double T, out double alpha, out double delta)
         {
             double lamda, B, r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             double lamda0, lamda1, q;//必要なパラメータ[deg]
@@ -533,7 +550,7 @@ namespace Z_correction_test
         /***   Ｔ：時刻引数                   ***/
         /***   α：赤経[rad]    δ：赤緯[rad] ***/
         /****************************************/
-        void mars(double T, out double alpha, out double delta)
+        public static void mars(double T, out double alpha, out double delta)
         {
             double lamda, B, r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             double lamda0, lamda1, q;//必要なパラメータ[deg]
@@ -639,7 +656,7 @@ namespace Z_correction_test
         //*** 太陽の位置を計算する             ***/
         //***   Ｔ：時刻引数                   ***/
         //***   α：赤経[rad]    δ：赤緯[rad] ***/
-        void sunRADEC(double T, out double alpha, out double delta)
+        public static void sunRADEC(double T, out double alpha, out double delta)
         {
             //	double lambda,B,r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             //	double lamda0,lamda1,q ;//必要なパラメータ[deg]
