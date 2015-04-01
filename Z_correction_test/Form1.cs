@@ -112,19 +112,12 @@ namespace Z_correction_test
 
         private void button2_Click(object sender, EventArgs e)
         {
-            double sun_alt_thresold = -5.0;
-            double sun_alt = 90.0;
+            double sun_alt_thresold = -6.0;  // 航海薄明
+            DateTime dt = Planet.ObsStartTime(DateTime.Now, sun_alt_thresold);
+            DateTime dtend = Planet.ObsEndTime(DateTime.Now, sun_alt_thresold);
             double RAD = Math.PI / 180.0;
             string s;
-            // カルチャ情報を設定する
-            System.Globalization.CultureInfo cFormat = (
-                new System.Globalization.CultureInfo("fr-FR", false)
-            );
-            DateTime dtdate = DateTime.Now.Date ;
 
-            while (sun_alt > sun_alt_thresold)
-            {
-                DateTime dt = dtdate. DateTime.Parse("2015/3/29 19:00:00", cFormat); // JST  //UTC = JST-9h  
                 double pt1 = Planet.planet_time_jst_datetime(dt);
 
                 double ra, dec, az, alt;
@@ -134,9 +127,8 @@ namespace Z_correction_test
                 Planet.sunRADEC(pt1, out ra, out dec);
                 Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
 
-                s = string.Format("Sun:{0}, {1} \n", az, alt);
+                s = string.Format("S={2} E={3}    Sun:{0}, {1} \n", az, alt,dt, dtend);
                 richTextBox1.AppendText(s);
-            }
         }
 
     }

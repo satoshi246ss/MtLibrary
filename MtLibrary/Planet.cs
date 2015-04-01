@@ -933,5 +933,51 @@ namespace MtLibrary
 
             return (Matrix)(m2.Multiply(m));
         }
+        /// <summary>
+        /// 観測開始時刻
+        /// </summary>
+        public static DateTime ObsStartTime(DateTime obs_dt, double sun_alt_thresold=-5.0, double lon = 139.563054, double lat = 35.355091)
+        {       
+            if( sun_alt_thresold >  30.0 ) sun_alt_thresold = 30 ;
+            if( sun_alt_thresold < -30.0 ) sun_alt_thresold = -30 ;
+            double ra, dec, az, alt = 90.0;
+            double RAD = Math.PI / 180.0;
+
+            DateTime dtdate = obs_dt.Date;
+            DateTime dt = dtdate.AddHours(15.0); // 15時から計算開始
+
+            while (alt > sun_alt_thresold)
+            {
+                dt = dt.AddMinutes(1); // 刻み　1分
+                double pt1 = Planet.planet_time_jst_datetime(dt);
+
+                Planet.sunRADEC(pt1, out ra, out dec);
+                Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+            }
+            return dt;
+        }
+        /// <summary>
+        /// 観測終了時刻
+        /// </summary>
+        public static DateTime ObsEndTime(DateTime obs_dt, double sun_alt_thresold = -6.0, double lon = 139.563054, double lat = 35.355091)
+        {
+            if (sun_alt_thresold > 30.0) sun_alt_thresold = 30;
+            if (sun_alt_thresold < -30.0) sun_alt_thresold = -30;
+            double ra, dec, az, alt = 90.0;
+            double RAD = Math.PI / 180.0;
+
+            DateTime dtdate = obs_dt.Date;
+            DateTime dt = dtdate.AddHours(9.0); // 9時から計算開始
+
+            while (alt > sun_alt_thresold)
+            {
+                dt = dt.AddMinutes(-1); // 刻み　1分
+                double pt1 = Planet.planet_time_jst_datetime(dt);
+
+                Planet.sunRADEC(pt1, out ra, out dec);
+                Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+            }
+            return dt;
+        }
     }
 }
