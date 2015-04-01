@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra.Double;
 
-namespace Z_correction_test
+namespace MtLibrary
 {
     /********************************************/
     /***                                      ***/
@@ -14,7 +14,7 @@ namespace Z_correction_test
     /***                    by SAKURAI        ***/
     /***                                      ***/
     /********************************************/
-    class Planet
+    public class Planet
     {
         //---------------------------------------------------------------------------
         // 時刻引数のラッパ

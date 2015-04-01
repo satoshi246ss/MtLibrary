@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Z_correction_test
+namespace MtLibrary
 {
-    class JulianDay
+    public class JulianDay
     {
         private const long DayOfTicks = 864000000000;       // 一日は 864000000000 Ticks
         private const double FirstDayOfJulianDay = 1721425.5;   // 西暦1年1月1日0時0分0秒はユリウス日で 1721425.5
