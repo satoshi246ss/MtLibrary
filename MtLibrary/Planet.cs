@@ -188,19 +188,17 @@ namespace MtLibrary
         public static void moon(double T, out double lambda_s, out double beta_s, out double r_s)
         {
             //必要なパラメータを求める
-            double q;
-            double PI = Math.PI;
             double RAD = Math.PI / 180.0;
 
             //【7-2表】月の位置の略算式（海上保安庁水路部による）
             //月の視黄経λｓ’[deg]
             double A = 0.0040 * Math.Sin((93.8 - 1.33 * T) * RAD)
-+ 0.0020 * Math.Sin((248.6 - 19.34 * T) * RAD)
-+ 0.0006 * Math.Sin((66 + 0.2 * T) * RAD)
-+ 0.0006 * Math.Sin((249 - 19.3 * T) * RAD);
+                     + 0.0020 * Math.Sin((248.6 - 19.34 * T) * RAD)
+                     + 0.0006 * Math.Sin((66 + 0.2 * T) * RAD)
+                     + 0.0006 * Math.Sin((249 - 19.3 * T) * RAD);
 
             lambda_s = 124.8754 + 4812.67881 * T
-    + 6.2887 * Math.Sin((338.915 + 4771.9886 * T + A) * RAD)
++ 6.2887 * Math.Sin((338.915 + 4771.9886 * T + A) * RAD)
 + 1.2740 * Math.Sin((107.248 - 4133.3536 * T) * RAD)
 + 0.6583 * Math.Sin((51.668 + 8905.3422 * T) * RAD)
 + 0.2136 * Math.Sin((317.831 + 9543.9773 * T) * RAD)
@@ -264,7 +262,6 @@ namespace MtLibrary
 + 0.0003 * Math.Sin((317 - 40.7 * T) * RAD)
 + 0.0003 * Math.Sin((348 + 23221.3 * T) * RAD);
 
-
             //月の視黄緯β[deg]
             double B = 0.0267 * Math.Sin((68.64 - 19.341 * T) * RAD)
             + 0.0043 * Math.Sin((342.0 - 19.36 * T) * RAD)
@@ -273,7 +270,7 @@ namespace MtLibrary
             + 0.0005 * Math.Sin((358 - 19.4 * T) * RAD);
 
             beta_s = 5.1282 * Math.Sin((236.231 + 4832.0202 * T + B) * RAD)
-+ 0.2806 * Math.Sin((215.147 + 9604.0088 * T) * RAD)
+                + 0.2806 * Math.Sin((215.147 + 9604.0088 * T) * RAD)
 + 0.2777 * Math.Sin((77.316 + 60.0316 * T) * RAD)
 + 0.1732 * Math.Sin((4.563 - 4073.3220 * T) * RAD)
 + 0.0554 * Math.Sin((308.98 + 8965.374 * T) * RAD)
@@ -329,13 +326,11 @@ namespace MtLibrary
             + 0.0005 * Math.Cos((305 - 8545.4 * T) * RAD)
             + 0.0004 * Math.Cos((284 - 3773.4 * T) * RAD)
             + 0.0003 * Math.Cos((342 + 4412.0 * T) * RAD);
+
+            double a_earth = 6378.140; //[km]
+            r_s = a_earth / sinpi;
         }
-
-
-
-
-
-
+        
 
         /****************************************/
         /*** 土星の位置を計算する             ***/
@@ -848,8 +843,69 @@ namespace MtLibrary
             delta =  Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) *  Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta =  Math.Asin(delta);
         }
+        //****************************************/
+        //*** 月の位置を計算する   　          ***/
+        //***   Ｔ：時刻引数                   ***/
+        //***   α：地心赤経[rad]　δ：地心赤緯[rad] ***/
+        public static void moonGeoRADEC(double T, out double alpha, out double delta)
+        {
+            //	double lambda,B,r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
+            //	double lamda0,lamda1,q ;//必要なパラメータ[deg]
+            double lam, beta;	    //黄道座標λ[deg]，β[deg]
+            double lambda_s, beta_s, r_s;	//惑星光行差による補正
+            double epsilon;		    //黄道傾角ε[deg]
+            double PI = Math.PI;
+
+            moon(T, out lambda_s, out beta_s, out r_s);
+            //惑星光行差による補正
+            //補正項Δλを求める
+            //	d_lam = - 0.0057/r_s *  Math.Cos( (lam - lambda_s)*PI/180 )
+            //			- 0.0071/r   *  Math.Cos( (lam - lambda  )*PI/180 );
+            //実際に補正を行う
+            lam = lambda_s; // -0.0057; //仮
+            beta = beta_s;
+
+            /*****赤道座標α[rad]，δ[rad]へ変換する*****/
+            //黄道傾角ε[deg]を求める
+            epsilon = obliquity_of_the_ecliptic(T);
+            //赤経α[rad]を求める
+            alpha = (Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Cos(epsilon * PI / 180) - Math.Sin(beta * PI / 180) * Math.Sin(epsilon * PI / 180))
+                        / (Math.Cos(beta * PI / 180) * Math.Cos(lam * PI / 180));	//atanをとる前の値
+            alpha = Math.Atan(alpha);	//α[rad]
+            //αは第Ⅱ，第Ⅲ象限にある
+            if (Math.Cos(lam * PI / 180) < 0) { alpha += PI; }
+            //αを０から２πの範囲に
+            if (alpha > 2 * PI) { alpha -= 2 * PI; }
+            else if (alpha < 0) { alpha += 2 * PI; }
+            //赤緯δ[rad]を求める
+            delta = Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) * Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
+            delta = Math.Asin(delta);
+        }
+
+        /// <summary>
+        /// 緯度経度　->　赤道座標「ｋｍ」
+        /// 経度　longitude　[deg]
+        /// 緯度　latitude   [deg]
+        /// 標高　height     [km]
+        /// </summary>
+        public static Vector geographic2eq_km(double lon_deg, double lat_deg, double height_km=0.0)
+        {
+            var v = Vector.Build.Dense(3);
+            //DenseVector ve = ve.Dense(10);
+            const double RAD = Math.PI / 180.0;
+            double ae = 6377.397155;
+            double e2 = 0.006674372230614;
+            double N = ae / ( Math.Sqrt(1.0-e2*Math.Sin(lat_deg*RAD)*Math.Sin(lat_deg*RAD)));
 
 
+            // 赤道座標の方向余弦
+            v[0] = (N + height_km) * Math.Cos(lat_deg * RAD) * Math.Cos(lon_deg * RAD);
+            v[1] = (N + height_km) * Math.Cos(lat_deg * RAD) * Math.Sin(lon_deg * RAD);
+            v[2] = (N*(1-e2) + height_km) * Math.Sin(lat_deg * RAD);
+
+            return (Vector)v;
+        }
+        
         // 以下、自作ライブリラ
 
         /// <summary>

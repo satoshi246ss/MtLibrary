@@ -118,17 +118,22 @@ namespace Z_correction_test
             double RAD = Math.PI / 180.0;
             string s;
 
-                double pt1 = Planet.planet_time_jst_datetime(dt);
+            double pt1 = Planet.planet_time_jst_datetime(dt);
 
-                double ra, dec, az, alt;
-                double lon = 139.563054; //　経度
-                double lat = 35.355091; //  緯度
+            double ra, dec, az, alt;
+            double lon = 139.563054; //　経度
+            double lat = 35.355091; //  緯度
 
-                Planet.sunRADEC(pt1, out ra, out dec);
-                Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+            Planet.sunRADEC(pt1, out ra, out dec);
+            Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
 
-                s = string.Format("S={2} E={3}    Sun:{0}, {1} \n", az, alt,dt, dtend);
-                richTextBox1.AppendText(s);
+            s = string.Format("S={2} E={3}    Sun:{0}, {1} \n", az, alt, dt, dtend);
+            richTextBox1.AppendText(s);
+
+            double fai = 35, ramda = 140, h = 100;
+            var v = Planet.geographic2eq_km(ramda, fai, h);
+            s = string.Format("V=({0},  {1},  {2})\n", v[0],v[1],v[2]);
+            richTextBox1.AppendText(s);
         }
 
     }
