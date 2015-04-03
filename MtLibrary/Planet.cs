@@ -19,24 +19,44 @@ namespace MtLibrary
         //---------------------------------------------------------------------------
         // 時刻引数のラッパ
         // In:時刻 t(JST)
+        /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
         //---------------------------------------------------------------------------
         public static double planet_time_jst_datetime(DateTime t)
         {
             //MJD
             double mjd = JulianDay.DateTimeToModifiedJulianDay(t);
 
-            // カルチャ情報を設定する
-            System.Globalization.CultureInfo cFormat = (
-                new System.Globalization.CultureInfo("fr-FR", false)
-            );
             // 文字列から DateTime の値に変換する
-            DateTime dtBirth = DateTime.Parse("1974/12/31 00:00:00", cFormat); //UT "1974/12/31 00:00:00" - 9H
+            DateTime dtBirth = new DateTime(1974,12,31,00,00,00); //UT "1974/12/31 00:00:00" - 9H
             double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
 
             double ans = (mjd - (mjd0+0.375)) / 365.25;  // JSTにするため、時差9hを引く 9/24h=0.375
             return ans;
         }
+        public static double planet_time_to_mjd(double pt)
+        {
+            //planet time
+            //  1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     
+            double pt_mdj0 = planet_time(1974, 12, 31, 0, 0, 0);
+            double dpt = pt - pt_mdj0;
 
+            DateTime dtBirth = new DateTime(1974, 12, 31, 00, 00, 00); //UT "1974/12/31 00:00:00" - 9H
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+
+            double ans = mjd0 + dpt * 365.25; // (mjd - (mjd0 + 0.375)) / 365.25;  // JSTにするため、時差9hを引く 9/24h=0.375
+            return ans;
+        }
+
+        public static double planet_time_mjd(double pt)
+        {
+            //planet time
+            //1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     
+            DateTime dtBirth = new DateTime(1974, 12, 31, 00, 00, 00); //UT "1974/12/31 00:00:00" - 9H
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+
+            double ans = 365.25 * pt + mjd0 ;  // JSTにするため、時差9hを引く 9/24h=0.375
+            return ans;
+        }
         /************************************************************/
         /*** 惑星（太陽・月も）の位置計算に必要な時刻引数を求める ***/
         /***   ただし、ＵＴ(JST-9H)を代入すること                 ***/
@@ -847,12 +867,12 @@ namespace MtLibrary
         //*** 月の位置を計算する   　          ***/
         //***   Ｔ：時刻引数                   ***/
         //***   α：地心赤経[rad]　δ：地心赤緯[rad] ***/
-        public static void moonGeoRADEC(double T, out double alpha, out double delta)
+        public static void moonGeoRADEC(double T, out double alpha, out double delta, out double r_s)
         {
             //	double lambda,B,r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
             //	double lamda0,lamda1,q ;//必要なパラメータ[deg]
             double lam, beta;	    //黄道座標λ[deg]，β[deg]
-            double lambda_s, beta_s, r_s;	//惑星光行差による補正
+            double lambda_s, beta_s;	//惑星光行差による補正
             double epsilon;		    //黄道傾角ε[deg]
             double PI = Math.PI;
 
@@ -880,6 +900,24 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta = Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) * Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta = Math.Asin(delta);
+        }
+       //****************************************/
+        //*** 月の位置を計算する   　          ***/
+        //***   Ｔ：時刻引数                   ***/
+        //***   α：赤経[rad]　δ：赤緯[rad] ***/
+        public static void moonTopoRADEC(double T, double lon_deg, double lat_deg, double height_km, out double alpha, out double delta)
+        {
+            var obs_point = geographic2eq_km(lon_deg, lat_deg, height_km);
+            double gsd = JulianDay.GSD_MJD(planet_time_to_mjd(T));
+            var rz = Rotate_Z(gsd);
+            obs_point = (Vector)rz.Multiply(obs_point);
+
+            double alpha_ec, delta_ec, r_s;
+            moonGeoRADEC(T, out alpha_ec, out delta_ec, out r_s);
+            var moon_point = r_s * eq_directional_cosine(alpha_ec, delta_ec);
+
+            alpha = 0;
+            delta = 0;
         }
 
         /// <summary>
@@ -1057,7 +1095,7 @@ namespace MtLibrary
             return (Matrix)m;
         }
         /// <summary>
-        /// 地平座標->赤道座標
+        /// 地平座標->赤道座標 用行列
         /// </summary>
         public static Matrix AzAlt2EqMat(double theta, double fai)
         {

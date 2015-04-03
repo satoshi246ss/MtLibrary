@@ -54,7 +54,7 @@ namespace MtLibrary
         /// 恒星時
         /// In:時刻t(JST) 経度lon(deg)     Out:恒星時(deg)
         ///---------------------------------------------------------------------------
-        public static double SiderealTime(DateTime td, double lon)
+        public static double SiderealTime(DateTime td_jst, double lon)
         {
             double gsd; //グリニジ恒星時
             double sd;  //恒星時
@@ -62,7 +62,7 @@ namespace MtLibrary
             double ti;  //その日の９時からの経過時間(day)
             double d0;  //その日の９時のTDateTime値
 
-            double mjd = DateTimeToModifiedJulianDay(td);
+            double mjd = DateTimeToModifiedJulianDay(td_jst);
             double t= (int)mjd -15019.5 ; 
             d0 = (int)(t);
             ti = mjd - (int)mjd - 0.375; // 時差9hを引く 9/24h=0.375
@@ -71,13 +71,16 @@ namespace MtLibrary
             sd = gsd + lon + 1.00273791 * ti * 360;
             return (sd % 360);//(fmod(sd,360)) ;
         }
-        public static double GSD(DateTime td)
+        public static double GSD_DateTime(DateTime td_ut)
+        {
+            double mjd = DateTimeToModifiedJulianDay(td_ut);
+            return GSD_MJD(mjd);
+        }
+        public static double GSD_MJD(double mjd)
         {
             double gsd; //グリニジ恒星時
             double tu;  //
             double d0;  //その日の９時のTDateTime値
-
-            double mjd = DateTimeToModifiedJulianDay(td);
             double t = mjd - 15019.5; 
 
             d0 = (int)(t);

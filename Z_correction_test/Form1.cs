@@ -84,6 +84,7 @@ namespace Z_correction_test
             //MJD
             DateTime t = DateTime.Now;
             double aa = JulianDay.DateTimeToModifiedJulianDay(t);
+            DateTime dtBirth1 = new DateTime(1858,11,17,00,00,00);
 
             // カルチャ情報を設定する
             System.Globalization.CultureInfo cFormat = (
@@ -92,6 +93,11 @@ namespace Z_correction_test
             // 文字列から DateTime の値に変換する
             DateTime dtBirth = DateTime.Parse("1858/11/17 00:00:00", cFormat);
             double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+            double pt11 = Planet.planet_time_jst_datetime(dtBirth);
+            double m = Planet.planet_time_to_mjd(pt11);
+            s = string.Format("dt:{0}, {1} {2}\n", dtBirth, mjd0, m);
+            richTextBox1.AppendText(s);
+
 
             dtBirth = DateTime.Parse("1899/12/31 12:00:00", cFormat);
             mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
@@ -105,7 +111,10 @@ namespace Z_correction_test
             dtBirth = DateTime.Parse("1979/9/15 21:00:00", cFormat); // JST  //UTC = JST-9h  
             double pt1 = Planet.planet_time_jst_datetime(dtBirth);
             double pt2 = Planet.planet_time(1979, 9, 15, 12, 0, 0);
-            s = string.Format("PT:{0}, {1} \n", pt1, pt2);
+
+            dtBirth = DateTime.Parse("1978/6/10 00:00:00", cFormat); // JST  //UTC = JST-9h  
+            double gsd = JulianDay.GSD(dtBirth);
+            s = string.Format("PT:{0}, {1} gsd:{2}\n", pt1, pt2,gsd);
             richTextBox1.AppendText(s);
 
         }
