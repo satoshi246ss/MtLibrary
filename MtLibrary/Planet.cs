@@ -869,7 +869,7 @@ namespace MtLibrary
         //****************************************/
         //*** 月の位置を計算する   　          ***/
         //***   Ｔ：時刻引数                   ***/
-        //***   α：地心赤経[rad]　δ：地心赤緯[rad] ***/
+        //***   α：地心赤経[deg]　δ：地心赤緯[deg] ***/
         public static void moonGeoRADEC(double T, out double alpha, out double delta, out double r_s)
         {
             //	double lambda,B,r;	    //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
@@ -878,6 +878,7 @@ namespace MtLibrary
             double lambda_s, beta_s;	//惑星光行差による補正
             double epsilon;		    //黄道傾角ε[deg]
             double PI = Math.PI;
+            double RAD = Math.PI / 180.0;
 
             moon(T, out lambda_s, out beta_s, out r_s);
             //惑星光行差による補正
@@ -903,17 +904,21 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta = Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) * Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta = Math.Asin(delta);
+
+            alpha /= RAD;
+            delta /= RAD;
         }
        //****************************************/
         //*** 月の位置を計算する   　          ***/
         //***   Ｔ：時刻引数                   ***/
-        //***   α：赤経[rad]　δ：赤緯[rad] ***/
+        //***   α：赤経[deg]　δ：赤緯[deg] ***/
         public static void moonTopoRADEC(double T, out double alpha, out double delta)
         {
             moonTopoRADEC(T, 139.531555556, 35.788889, 80, out alpha, out delta) ; // 自宅専用
         }
         public static void moonTopoRADEC(double T, double lon_deg, double lat_deg, double height_km, out double alpha, out double delta)
         {
+            double RAD = Math.PI / 180.0;
             var obs_point = geographic2eq_km(lon_deg, lat_deg, height_km);
             double gsd = JulianDay.GSD_MJD(planet_time_to_mjd(T));
             var rz = Rotate_Z(gsd);

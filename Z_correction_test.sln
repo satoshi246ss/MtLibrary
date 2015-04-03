@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z_correction_test", "Z_correction_test\Z_correction_test.csproj", "{7302D784-DD25-4DD4-80DC-76FF16686EF3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9DDDADB0-4266-440C-ABBC-63B861DA600C} = {9DDDADB0-4266-440C-ABBC-63B861DA600C}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtLibrary", "MtLibrary\MtLibrary.csproj", "{9DDDADB0-4266-440C-ABBC-63B861DA600C}"
 EndProject
