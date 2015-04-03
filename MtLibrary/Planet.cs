@@ -21,10 +21,10 @@ namespace MtLibrary
         // In:時刻 t(JST)
         /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
         //---------------------------------------------------------------------------
-        public static double planet_time_jst_datetime(DateTime t)
+        public static double planet_time_jst_datetime(DateTime t_jst)
         {
             //MJD
-            double mjd = JulianDay.DateTimeToModifiedJulianDay(t);
+            double mjd = JulianDay.DateTimeToModifiedJulianDay(t_jst);
 
             // 文字列から DateTime の値に変換する
             DateTime dtBirth = new DateTime(1974,12,31,00,00,00); //UT "1974/12/31 00:00:00" - 9H
@@ -54,7 +54,7 @@ namespace MtLibrary
             DateTime dtBirth = new DateTime(1974, 12, 31, 00, 00, 00); //UT "1974/12/31 00:00:00" - 9H
             double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
 
-            double ans = 365.25 * pt + mjd0 ;  // JSTにするため、時差9hを引く 9/24h=0.375
+            double ans = 365.25 * pt + mjd0 ; 
             return ans;
         }
         /************************************************************/
@@ -62,7 +62,7 @@ namespace MtLibrary
         /***   ただし、ＵＴ(JST-9H)を代入すること                 ***/
         /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
         /************************************************************/
-        public static double planet_time(int year, int month, int day, double hour, double min, double sec)
+        public static double planet_time(int year, int month, int day, double hour_ut, double min, double sec)
         {
             double W, F, Z, J, t, T;
             int X, R, S;
@@ -78,7 +78,7 @@ namespace MtLibrary
             //観測日の０時までの経過日数ｚ
             Z = (double)Y + 31 * (double)month + (double)day + ((double)X - 1) * (double)R - (double)X * (double)S - 27424;
             //観測日の端数ｊ
-            J = hour / 24 + min / (24 * 60) + sec / (24 * 60 * 60);
+            J = hour_ut / 24 + min / (24 * 60) + sec / (24 * 60 * 60);
             //世界時で表現した経過時間ｔ
             t = (Z + J) / 365.25;
             //歴表時による表現Ｔ
@@ -348,7 +348,10 @@ namespace MtLibrary
             + 0.0003 * Math.Cos((342 + 4412.0 * T) * RAD);
 
             double a_earth = 6378.140; //[km]
-            r_s = a_earth / sinpi;
+            r_s = a_earth / ( sinpi * RAD ) ;
+
+            lambda_s = lambda_s % 360;
+            beta_s = beta_s % 360;
         }
         
 
@@ -905,6 +908,10 @@ namespace MtLibrary
         //*** 月の位置を計算する   　          ***/
         //***   Ｔ：時刻引数                   ***/
         //***   α：赤経[rad]　δ：赤緯[rad] ***/
+        public static void moonTopoRADEC(double T, out double alpha, out double delta)
+        {
+            moonTopoRADEC(T, 139.531555556, 35.788889, 80, out alpha, out delta) ; // 自宅専用
+        }
         public static void moonTopoRADEC(double T, double lon_deg, double lat_deg, double height_km, out double alpha, out double delta)
         {
             var obs_point = geographic2eq_km(lon_deg, lat_deg, height_km);
@@ -915,9 +922,10 @@ namespace MtLibrary
             double alpha_ec, delta_ec, r_s;
             moonGeoRADEC(T, out alpha_ec, out delta_ec, out r_s);
             var moon_point = r_s * eq_directional_cosine(alpha_ec, delta_ec);
+            var vmp = moon_point - obs_point;
 
-            alpha = 0;
-            delta = 0;
+            var vmp1 = vmp.Normalize(2);
+            eq_rev_directional_cosine((Vector)vmp1, out alpha, out delta);
         }
 
         /// <summary>

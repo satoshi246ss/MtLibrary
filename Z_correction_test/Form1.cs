@@ -113,8 +113,13 @@ namespace Z_correction_test
             double pt2 = Planet.planet_time(1979, 9, 15, 12, 0, 0);
 
             dtBirth = DateTime.Parse("1978/6/10 00:00:00", cFormat); // JST  //UTC = JST-9h  
-            double gsd = JulianDay.GSD(dtBirth);
-            s = string.Format("PT:{0}, {1} gsd:{2}\n", pt1, pt2,gsd);
+            double gsd = JulianDay.GSD_DateTime(dtBirth);
+            double ra, dec,r;
+            DateTime dt_jst = new DateTime(2014, 5, 21, 9, 0, 0);
+            pt1 = Planet.planet_time_jst_datetime(dt_jst); 
+            Planet.moonTopoRADEC(pt1, out ra, out dec);
+            Planet.moonGeoRADEC(pt1, out ra, out dec, out r);
+            s = string.Format("PT:{0}, {1} gsd:{2}\n", ra, dec,gsd);
             richTextBox1.AppendText(s);
 
         }
