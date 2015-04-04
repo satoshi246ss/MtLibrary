@@ -358,7 +358,7 @@ namespace MtLibrary
         /****************************************/
         /*** 土星の位置を計算する             ***/
         /***   Ｔ：時刻引数                   ***/
-        /***   α：赤経[rad]    δ：赤緯[rad] ***/
+        /***   α：赤経[deg]    δ：赤緯[deg] ***/
         /****************************************/
         public static void saturn(double T, out double alpha, out double delta)
         {
@@ -502,13 +502,16 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta =  Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) *  Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta =  Math.Asin(delta);
+
+            alpha /= (Math.PI / 180.0);
+            delta /= (Math.PI / 180.0);
         }
 
 
         /****************************************/
         /*** 木星の位置を計算する             ***/
         /***   Ｔ：時刻引数                   ***/
-        /***   α：赤経[rad]    δ：赤緯[rad] ***/
+        /***   α：赤経[deg]    δ：赤緯[deg] ***/
         /****************************************/
         public static void jupiter(double T, out double alpha, out double delta)
         {
@@ -635,12 +638,15 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta =  Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) *  Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta =  Math.Asin(delta);
+
+            alpha /= (Math.PI / 180.0);
+            delta /= (Math.PI / 180.0);
         }
 
         /****************************************/
         /*** 金星の位置を計算する             ***/
         /***   Ｔ：時刻引数                   ***/
-        /***   α：赤経[rad]    δ：赤緯[rad] ***/
+        /***   α：赤経[deg]    δ：赤緯[deg] ***/
         /****************************************/
         public static void venus(double T, out double alpha, out double delta)
         {
@@ -719,12 +725,15 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta =  Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) *  Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta =  Math.Asin(delta);
+
+            alpha /= (Math.PI / 180.0);
+            delta /= (Math.PI / 180.0);
         }
 
         /****************************************/
         /*** 火星の位置を計算する             ***/
         /***   Ｔ：時刻引数                   ***/
-        /***   α：赤経[rad]    δ：赤緯[rad] ***/
+        /***   α：赤経[deg]    δ：赤緯[deg] ***/
         /****************************************/
         public static void mars(double T, out double alpha, out double delta)
         {
@@ -826,6 +835,9 @@ namespace MtLibrary
             //赤緯δ[rad]を求める
             delta =  Math.Cos(beta * PI / 180) * Math.Sin(lam * PI / 180) * Math.Sin(epsilon * PI / 180) + Math.Sin(beta * PI / 180) *  Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
             delta =  Math.Asin(delta);
+
+            alpha /= (Math.PI / 180.0);
+            delta /= (Math.PI / 180.0);
         }
 
         //****************************************/
@@ -918,7 +930,7 @@ namespace MtLibrary
         }
         public static void moonTopoRADEC(double T, double lon_deg, double lat_deg, double height_km, out double alpha, out double delta)
         {
-            double RAD = Math.PI / 180.0;
+            //double RAD = Math.PI / 180.0;
             var obs_point = geographic2eq_km(lon_deg, lat_deg, height_km);
             double gsd = JulianDay.GSD_MJD(planet_time_to_mjd(T));
             var rz = Rotate_Z(gsd);

@@ -115,7 +115,7 @@ namespace Z_correction_test
             dtBirth = DateTime.Parse("1978/6/10 00:00:00", cFormat); // JST  //UTC = JST-9h  
             double gsd = JulianDay.GSD_DateTime(dtBirth);
 
-            double ra, dec,r;
+            double ra, dec;
             DateTime dt_jst = new DateTime(2014, 5, 21, 9, 0, 0);
             pt1 = Planet.planet_time_jst_datetime(dt_jst); 
             Planet.moonTopoRADEC(pt1, out ra, out dec);
