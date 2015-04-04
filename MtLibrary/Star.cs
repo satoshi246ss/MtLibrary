@@ -187,5 +187,12 @@ namespace MtLibrary
             set { id = value; }
             get { return id; }
         }
+        // Listのデータ数
+        public int Count
+        {
+            get { return star_data.Count; }
+        }
+
+        
     }
 }
