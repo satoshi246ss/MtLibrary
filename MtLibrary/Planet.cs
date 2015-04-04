@@ -914,7 +914,7 @@ namespace MtLibrary
         //***   α：赤経[deg]　δ：赤緯[deg] ***/
         public static void moonTopoRADEC(double T, out double alpha, out double delta)
         {
-            moonTopoRADEC(T, 139.531555556, 35.788889, 80, out alpha, out delta) ; // 自宅専用
+            moonTopoRADEC(T, 139.531555556, 35.788889, 0.080, out alpha, out delta) ; // 自宅専用
         }
         public static void moonTopoRADEC(double T, double lon_deg, double lat_deg, double height_km, out double alpha, out double delta)
         {
@@ -1148,9 +1148,14 @@ namespace MtLibrary
         /// <summary>
         /// 赤道座標->地平座標
         /// </summary>
-        public static void Eq2AzAlt(double ra, double dec, double lon, double fai, DateTime t, out double az, out double alt)
+        public static void Eq2AzAlt_JST(double ra, double dec, double lon, double fai, DateTime t_jst, out double az, out double alt)
         {
-            double theta = JulianDay.SiderealTime(t, lon);
+            DateTime t_ut = t_jst.AddHours(-9);
+            Eq2AzAlt_UT(ra, dec, lon, fai, t_ut, out az, out alt);
+        }
+        public static void Eq2AzAlt_UT(double ra, double dec, double lon, double fai, DateTime t_ut, out double az, out double alt)
+        {
+            double theta = JulianDay.SiderealTimeUT(t_ut, lon);
             var m = Eq2AzAltMat(theta, fai);
             var ve = eq_directional_cosine(ra, dec);
             //var v = Vector.Build.Dense(3);
@@ -1216,7 +1221,7 @@ namespace MtLibrary
                 double pt1 = Planet.planet_time_jst_datetime(dt);
 
                 Planet.sunRADEC(pt1, out ra, out dec);
-                Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+                Planet.Eq2AzAlt_JST(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
             }
             return dt;
         }
@@ -1239,7 +1244,7 @@ namespace MtLibrary
                 double pt1 = Planet.planet_time_jst_datetime(dt);
 
                 Planet.sunRADEC(pt1, out ra, out dec);
-                Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+                Planet.Eq2AzAlt_JST(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
             }
             return dt;
         }

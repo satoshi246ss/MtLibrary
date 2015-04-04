@@ -54,7 +54,12 @@ namespace MtLibrary
         /// 恒星時
         /// In:時刻t(JST) 経度lon(deg)     Out:恒星時(deg)
         ///---------------------------------------------------------------------------
-        public static double SiderealTime(DateTime td_jst, double lon)
+        public static double SiderealTimeUT(DateTime td_ut, double lon)
+        {
+            DateTime td_jst = td_ut.AddHours(9);
+            return SiderealTimeJST(td_jst, lon);
+        }
+        public static double SiderealTimeJST(DateTime td_jst, double lon)
         {
             double gsd; //グリニジ恒星時
             double sd;  //恒星時
@@ -74,7 +79,7 @@ namespace MtLibrary
         public static double GSD_DateTime(DateTime td_ut)
         {
             double mjd = DateTimeToModifiedJulianDay(td_ut);
-            return GSD_MJD(mjd);
+            return GSD_MJD(mjd);            
         }
         public static double GSD_MJD(double mjd)
         {

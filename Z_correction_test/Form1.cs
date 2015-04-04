@@ -104,7 +104,7 @@ namespace Z_correction_test
 
             dtBirth = DateTime.Parse("1978/6/10 21:20:00", cFormat); // JST  //UTC = JST-9h  
             double az, alt;
-            Planet.Eq2AzAlt(316.166396, 38.499750, 139.531555556, 35.788889, dtBirth, out az, out alt);
+            Planet.Eq2AzAlt_JST(316.166396, 38.499750, 139.531555556, 35.788889, dtBirth, out az, out alt);
             s = string.Format("aa:{0}, {1} \n", az,alt);
             richTextBox1.AppendText(s);
 
@@ -114,23 +114,30 @@ namespace Z_correction_test
 
             dtBirth = DateTime.Parse("1978/6/10 00:00:00", cFormat); // JST  //UTC = JST-9h  
             double gsd = JulianDay.GSD_DateTime(dtBirth);
+
             double ra, dec,r;
             DateTime dt_jst = new DateTime(2014, 5, 21, 9, 0, 0);
             pt1 = Planet.planet_time_jst_datetime(dt_jst); 
             Planet.moonTopoRADEC(pt1, out ra, out dec);
-            Planet.moonGeoRADEC(pt1, out ra, out dec, out r);
-            s = string.Format("PT:{0}, {1} gsd:{2}\n", ra, dec,gsd);
+            double lon = 139.531555556, lat = 35.788889;
+            Planet.Eq2AzAlt_JST(ra, dec, lon, lat, dt_jst, out az, out alt);
+
+//          //  Planet.moonGeoRADEC(pt1, out ra, out dec, out r);
+            s = string.Format("PT:{0}, {1} gsd:{2}  az:{3} {4}\n", ra, dec,gsd,az,alt);
             richTextBox1.AppendText(s);
 
-        }
+          }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            Star.init();
+
+
             double sun_alt_thresold = -6.0;  // 航海薄明
             DateTime dt = Planet.ObsStartTime(DateTime.Now, sun_alt_thresold);
-            DateTime dtend = Planet.ObsEndTime(DateTime.Now, sun_alt_thresold);
-            double RAD = Math.PI / 180.0;
-            string s;
+           string s;
+           double RAD = Math.PI / 180.0;
+           DateTime dtend = Planet.ObsEndTime(DateTime.Now, sun_alt_thresold);
 
             double pt1 = Planet.planet_time_jst_datetime(dt);
 
@@ -139,7 +146,7 @@ namespace Z_correction_test
             double lat = 35.355091; //  緯度
 
             Planet.sunRADEC(pt1, out ra, out dec);
-            Planet.Eq2AzAlt(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
+            Planet.Eq2AzAlt_JST(ra / RAD, dec / RAD, lon, lat, dt, out az, out alt);
 
             s = string.Format("S={2} E={3}    Sun:{0}, {1} \n", az, alt, dt, dtend);
             richTextBox1.AppendText(s);

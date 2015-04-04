@@ -52,6 +52,7 @@
     <Compile Include="julian.cs" />
     <Compile Include="Planet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Star.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
