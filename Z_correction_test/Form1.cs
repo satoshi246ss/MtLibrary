@@ -130,14 +130,24 @@ namespace Z_correction_test
 
         private void button2_Click(object sender, EventArgs e)
         {
+            string s;
+
             Star.init();
 
+            Star.ID = 7;
+            Star.cal_azalt();
+            int count = Star.Count;
+            double ra0 = 316.166396, dec0=38.49975;
+            double ra1, dec1;
+            DateTime dt2 = new DateTime(1978,6,10,21,20,00);
+            Planet.Precession_JST(ra0, dec0, dt2, out ra1, out dec1);
+            s = string.Format("Star count:{0} {1} {2} Az:{3} {4}\n", count, Star.ID, Star.Name, ra1, dec1);
+            richTextBox1.AppendText(s);
 
             double sun_alt_thresold = -6.0;  // 航海薄明
             DateTime dt = Planet.ObsStartTime(DateTime.Now, sun_alt_thresold);
-           string s;
-           double RAD = Math.PI / 180.0;
-           DateTime dtend = Planet.ObsEndTime(DateTime.Now, sun_alt_thresold);
+            double RAD = Math.PI / 180.0;
+            DateTime dtend = Planet.ObsEndTime(DateTime.Now, sun_alt_thresold);
 
             double pt1 = Planet.planet_time_jst_datetime(dt);
 
@@ -153,7 +163,7 @@ namespace Z_correction_test
 
             double fai = 35, ramda = 140, h = 100;
             var v = Planet.geographic2eq_km(ramda, fai, h);
-            s = string.Format("V=({0},  {1},  {2})\n", v[0],v[1],v[2]);
+            s = string.Format("V=({0},  {1},  {2})\n", v[0], v[1], v[2]);
             richTextBox1.AppendText(s);
         }
 

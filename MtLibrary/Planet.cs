@@ -17,6 +17,28 @@ namespace MtLibrary
     public class Planet
     {
         //---------------------------------------------------------------------------
+        // ベッセル年
+        // In:時刻 t(JST)
+        /***   1900年0月0日0時ETからの経過時間を　約36525日単位で示したもの     ***/
+        //---------------------------------------------------------------------------
+        public static double t_bessel_JST(DateTime t_jst)
+        {
+            DateTime t_ut = t_jst.AddHours(-9);
+            return t_bessel_UT(t_ut);
+        }
+        public static double t_bessel_UT(DateTime t_ut)
+        {
+            //MJD
+            double mjd = JulianDay.DateTimeToModifiedJulianDay(t_ut);
+
+            // 文字列から DateTime の値に変換する
+            DateTime dtBirth = new DateTime(1949, 12, 31, 00, 00, 00); //UTH
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+
+            double ans = (mjd - mjd0) / 36524.2194;  // JSTにするため、時差9hを引く 9/24h=0.375
+            return ans;
+        }
+        //---------------------------------------------------------------------------
         // 時刻引数のラッパ
         // In:時刻 t(JST)
         /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
@@ -1096,7 +1118,7 @@ namespace MtLibrary
             return (Matrix)m;
         }
         /// <summary>
-        /// Z軸回転
+        /// Z軸回転 [deg]
         /// </summary>
         public static Matrix Rotate_Z(double theta)
         {
@@ -1158,8 +1180,37 @@ namespace MtLibrary
             return (Matrix)(m2.Multiply(m));
         }
         /// <summary>
+        /// 歳差補正
+        /// </summary>
+        public static void Precession_JST(double ra1, double dec1, DateTime t_jst, out double ra2, out double dec2)
+        {
+            DateTime t_ut = t_jst.AddHours(-9);
+            Precession_UT(ra1, dec1, t_ut, out ra2, out dec2);
+        }
+        public static void Precession_UT(double ra1, double dec1, DateTime t_ut, out double ra2, out double dec2)
+        {
+            double tb = t_bessel_UT(t_ut);
+            double tue   = 2304.948 * tb + 0.302 * tb * tb + 0.018 * tb * tb * tb;
+            double z     = 2304.948 * tb + 1.093 * tb * tb + 0.019 * tb * tb * tb;
+            double theta = 2004.2555 * tb - 0.426 * tb * tb - 0.042 * tb * tb * tb;
+
+            var m1 = Rotate_Z(-(90 - tue / 3600));
+            var m2 = Rotate_X(-theta/3600);
+            var m3 = Rotate_Z(+(90 + z / 3600));
+
+            var ve = eq_directional_cosine(ra1, dec1);
+            var v  = m3.Multiply( m2.Multiply( m1.Multiply(ve)));
+            eq_rev_directional_cosine((Vector)v, out ra2, out dec2);
+        }
+
+        /// <summary>
         /// 赤道座標->地平座標
         /// </summary>
+        public static void Eq2AzAlt_Yokohama(double ra, double dec, DateTime t_jst, out double az, out double alt)
+        {
+            DateTime t_ut = t_jst.AddHours(-9);
+            Eq2AzAlt_UT(ra, dec, 139.563054, 35.355091, t_ut, out az, out alt);
+        }
         public static void Eq2AzAlt_JST(double ra, double dec, double lon, double fai, DateTime t_jst, out double az, out double alt)
         {
             DateTime t_ut = t_jst.AddHours(-9);
