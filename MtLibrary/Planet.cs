@@ -28,12 +28,18 @@ namespace MtLibrary
         }
         public static double t_bessel_UT(DateTime t_ut)
         {
+            DateTime te0 = new DateTime(1899, 12, 31, 12, 00, 00); //UTH
+            double te_mjd0 = JulianDay.DateTimeToModifiedJulianDay(te0);
+            double N=t_ut.Year-1900;
+            N = 50;
+            int g = ((int)N-1) % 4 ;
+            double t50 = 1.06351646 - 0.0078012183 * N - 0.000000039270 * N * N + g / 4.0;
             //MJD
             double mjd = JulianDay.DateTimeToModifiedJulianDay(t_ut);
-
+             
             // 文字列から DateTime の値に変換する
             DateTime dtBirth = new DateTime(1949, 12, 31, 00, 00, 00); //UTH
-            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth) + t50 ;
 
             double ans = (mjd - mjd0) / 36524.2194;  // JSTにするため、時差9hを引く 9/24h=0.375
             return ans;

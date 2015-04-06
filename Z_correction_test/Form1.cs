@@ -134,14 +134,15 @@ namespace Z_correction_test
 
             Star.init();
 
-            Star.ID = 7;
-            Star.cal_azalt();
-            int count = Star.Count;
             double ra0 = 316.166396, dec0=38.49975;
             double ra1, dec1;
             DateTime dt2 = new DateTime(1978,6,10,21,20,00);
             Planet.Precession_JST(ra0, dec0, dt2, out ra1, out dec1);
-            s = string.Format("Star count:{0} {1} {2} Az:{3} {4}\n", count, Star.ID, Star.Name, ra1, dec1);
+
+            Star.ID = 7;
+            Star.cal_azalt();
+            int count = Star.Count;
+            s = string.Format("Star count:{0} {1} {2} Az:{3} {4}\n", count, Star.ID, Star.Name, Star.Az, Star.Alt);
             richTextBox1.AppendText(s);
 
             double sun_alt_thresold = -6.0;  // 航海薄明
