@@ -12,41 +12,20 @@ namespace MtLibrary
         public double DEC;
         public double Mag;
         public string Name;
-
-  /*      public Star_Data(double ra = 0)
-        {
-            RA = 0;
-            DEC = 0;
-            Mag = 0;
-            Name = "";
-        }
-   */ 
-    }
+   }
 
     public class Star
     {
-        static int id;
-        static double az, alt ;
+//        static int id;
         static List<Star_Data> star_data = new List<Star_Data>();
         static Star_Data sd = new Star_Data();
         static DateTime last_update = new DateTime();
 
         // propaty
-        public static int ID
-        {
-            set { id = value; }
-            get { return id; }
-        }
-        public static double Az
-        {
-            set { az = value; }
-            get { return az; }
-        }
-        public static double Alt
-        {
-            set { alt = value; }
-            get { return alt; }
-        }
+        public static int ID{get; set;}
+        public static double Az{get; set;}
+        public static double Alt{get; set;}
+
         // Listのデータ数
         public static int Count
         {
@@ -55,27 +34,27 @@ namespace MtLibrary
         // IDのdata
         public static Star_Data StarData
         {
-            get { return star_data[id]; }
+            get { return star_data[ID]; }
         }
         // IDのRA
         public static double RA
         {
-            get { return star_data[id].RA ; }
+            get { return star_data[ID].RA ; }
         }
         // IDのDEC
         public static double DEC
         {
-            get { return star_data[id].DEC; }
+            get { return star_data[ID].DEC; }
         }
         // IDのMag
         public static double Mag
         {
-            get { return star_data[id].Mag; }
+            get { return star_data[ID].Mag; }
         }
         // IDのName
         public static string Name
         {
-            get { return star_data[id].Name; }
+            get { return star_data[ID].Name; }
         }
 
         // member
@@ -241,7 +220,9 @@ namespace MtLibrary
         }
         public static void cal_azalt()
         {
-            Planet.Eq2AzAlt_Yokohama(star_data[id].RA, star_data[id].DEC, DateTime.Now, out az, out alt);
+            double az, alt;
+            Planet.Eq2AzAlt_Yokohama(star_data[ID].RA, star_data[ID].DEC, DateTime.Now, out az, out alt);
+            Az = az; Alt = alt;
         }
     }
 }

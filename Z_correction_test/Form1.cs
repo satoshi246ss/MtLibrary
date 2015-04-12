@@ -130,7 +130,19 @@ namespace Z_correction_test
 
         private void button2_Click(object sender, EventArgs e)
         {
+            string bs = System.IO.File.ReadAllText(@"S:\satoshi\Lib\bsc5.dat");
             string s;
+
+            int i = 2;
+            int n = 197;
+            for (i = 1; i < 10; i++)
+            {
+                int stp = (i - 1) * n;
+                s = bs.Substring(stp + 75, 15) + "\n";
+                richTextBox1.AppendText(s);
+            }
+           // s = bs.Substring(stp+5-1, 10) + "\n";
+           // richTextBox1.AppendText(s);
 
             Star.init();
 
@@ -166,6 +178,16 @@ namespace Z_correction_test
             var v = Planet.geographic2eq_km(ramda, fai, h);
             s = string.Format("V=({0},  {1},  {2})\n", v[0], v[1], v[2]);
             richTextBox1.AppendText(s);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string s,s1 = string.Format("ST 02000\r");
+
+            Common.Send_cmd_KV1000_init();
+            s=Common.Send_cmd_KV1000(s1);
+            richTextBox1.AppendText(s);
+            Common.Send_cmd_KV1000_close();
         }
 
     }
