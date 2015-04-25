@@ -122,11 +122,17 @@ namespace Z_correction_test
             double lon = 139.531555556, lat = 35.788889;
             Planet.Eq2AzAlt_JST(ra, dec, lon, lat, dt_jst, out az, out alt);
 
-//          //  Planet.moonGeoRADEC(pt1, out ra, out dec, out r);
+//           //  Planet.moonGeoRADEC(pt1, out ra, out dec, out r);
             s = string.Format("PT:{0}, {1} gsd:{2}  az:{3} {4}\n", ra, dec,gsd,az,alt);
             richTextBox1.AppendText(s);
 
-          }
+            dt_jst = new DateTime(2015, 4, 25, 18, 0, 0);
+            pt1 = Planet.planet_time_jst_datetime(dt_jst);
+            Planet.mercury(pt1, out ra, out dec);
+            s = string.Format("mercury PT1:{0}, ra,dec:{1},{2}\n", pt1, ra, dec);
+            richTextBox1.AppendText(s);
+        
+        }
 
         private void button2_Click(object sender, EventArgs e)
         {

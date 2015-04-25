@@ -45,6 +45,26 @@ namespace MtLibrary
             return ans;
         }
         //---------------------------------------------------------------------------
+        // 時刻引数のラッパ For 水星用
+        // In:時刻 t(JST)
+        /***   2000年1月1日12時ETからの経過時間を　365.25日単位で示したもの     ***/
+        /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
+        //---------------------------------------------------------------------------
+        /*
+        public static double planet_time2_jst_datetime(DateTime t_jst)
+        {
+            //MJD
+            double mjd = JulianDay.DateTimeToModifiedJulianDay(t_jst);
+
+            // 文字列から DateTime の値に変換する
+            //DateTime dtBirth = new DateTime(1974, 12, 31, 00, 00, 00); //UT "1974/12/31 00:00:00"
+            DateTime dtBirth = new DateTime(2000, 1, 1, 12, 00, 00); //UT "2000/1/1 12:00:00"
+            double mjd0 = JulianDay.DateTimeToModifiedJulianDay(dtBirth);
+
+            double ans = (mjd - (mjd0 + 0.375)) / 36525;  // JSTにするため、時差9hを引く 9/24h=0.375
+            return ans;
+        }*/
+        //---------------------------------------------------------------------------
         // 時刻引数のラッパ
         // In:時刻 t(JST)
         /***   1975年1月0日0時ET(1974/12/31 00:00:00 ET)からの経過時間を　365.25日単位で示したもの     ***/
@@ -996,7 +1016,111 @@ namespace MtLibrary
 
             return (Vector)v;
         }
+
+        /****************************************/
+        /*** 水星の位置を計算する             ***/
+        /***   ＴＴ：時刻引数　               ***/
+        /***   α：赤経[deg]    δ：赤緯[deg] ***/
+        /****************************************/
+        public static void mercury(double pt, out double alpha, out double delta)
+        {
+            double lamda, B, r;	      //日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]
+            double lam, beta;	      //黄道座標λ[deg]，β[deg]
+            double d_lam, lambda_s, r_s;	//惑星光行差による補正
+            double epsilon;		      //黄道傾角ε[deg]
+            double PI = Math.PI;
+
+
+            /*****日心黄経λ[deg]、日心黄緯Ｂ[deg]、動径ｒ[AU]を求める*****/
+            //必要なパラメータを求める[deg]
+            //Ｎ
+
+            //【7-9表】水星の位置略算式（海上保安庁水路部による）
+            double T = (pt-25.0034223134839)/100 ; // pt->T（水星用）に変換
+            double rad = Math.PI / 180.0;
+            lamda = 252.2502 + 149474.0714 * T
+            + (23.4405 + 0.0023 * T) * Math.Cos(rad * (149472.5153 * T + 84.7947)) + (2.9818 + 0.0006 * T) * Math.Cos(rad * (298945.031 * T + 259.589))
+            + 0.5258 * Math.Cos(rad * (448417.55 * T + 74.38))
+            + 0.1796 * Math.Cos(rad * (298945.77 * T + 137.84))
+            + 0.1061 * Math.Cos(rad * (597890.1 * T + 249.2))
+            + 0.0850 * Math.Cos(rad * (149473.3 * T + 143.0))
+            + 0.0760 * Math.Cos(rad * (448418.3 * T + 312.6))
+            + 0.0256 * Math.Cos(rad * (597890.8 * T + 127.4))
+            + 0.0230 * Math.Cos(rad * (747362.6 * T + 64.0))
+            + 0.0081 * Math.Cos(rad * (747363 * T + 302))
+            + 0.0069 * Math.Cos(rad * (1 * T + 148))
+            + 0.0052 * Math.Cos(rad * (896835 * T + 239))
+            + 0.0023 * Math.Cos(rad * (896836 * T + 117))
+            + 0.0019 * Math.Cos(rad * (6356 * T + 85))
+            + 0.0011 * Math.Cos(rad * (1046308 * T + 54))
+            + 0.0010 * Math.Cos(rad * (32437 * T + 234))
+            + 0.0009 * Math.Cos(rad * (143403 * T + 171))
+            + 0.0006 * Math.Cos(rad * (155828 * T + 268))
+            + 0.0005 * Math.Cos(rad * (1046308 * T + 292))
+            + 0.0004 * Math.Cos(rad * (143117 * T + 84))
+            + 0.0003 * Math.Cos(rad * (181909 * T + 63))
+            + 0.0003 * Math.Cos(rad * (123392 * T + 288))
+            + 0.0003 * Math.Cos(rad * (448419 * T + 11));
+
+            B = (6.70574 + 0.0017 * T) * Math.Cos(rad * (149472.886 * T + 113.919))
+            + (1.4396 + 0.0005 * T) * Math.Cos(rad * (0.37 * T + 119.12))
+            + (1.3643 + 0.0005 * T) * Math.Cos(rad * (298945.40 * T + 288.71))
+            + 0.3123 * Math.Cos(rad * (448417.92 * T + 103.51))
+            + 0.0753 * Math.Cos(rad * (597890.4 * T + 278.3))
+            + 0.0367 * Math.Cos(rad * (149472.1 * T + 55.7))
+            + 0.0187 * Math.Cos(rad * (747362.9 * T + 93.1))
+            + 0.0050 * Math.Cos(rad * (298945 * T + 230))
+            + 0.0047 * Math.Cos(rad * (896835 * T + 268))
+            + 0.0028 * Math.Cos(rad * (448419 * T + 342))
+            + 0.0023 * Math.Cos(rad * (298946 * T + 347))
+            + 0.0020 * Math.Cos(rad * (597891 * T + 157))
+            + 0.0012 * Math.Cos(rad * (1046308 * T + 83))
+            + 0.0009 * Math.Cos(rad * (747364 * T + 331))
+            + 0.0009 * Math.Cos(rad * (448417 * T + 45))
+            + 0.0005 * Math.Cos(rad * (149474 * T + 352))
+            + 0.0003 * Math.Cos(rad * (896836 * T + 146));
+
+            r = 0.395283 + 0.000002 * T
+            + (0.078341 + 0.000008 * T) * Math.Cos(rad * (149472.515 * T + 354.795))
+            + (0.007955 + 0.000002 * T) * Math.Cos(rad * (298945.03 * T + 169.59))
+            + 0.001214 * Math.Cos(rad * (448417.55 * T + 344.38))
+            + 0.000218 * Math.Cos(rad * (597890.1 * T + 159.2))
+            + 0.000042 * Math.Cos(rad * (747363 * T + 334))
+            + 0.000006 * Math.Cos(rad * (896835 * T + 149));
+
+            /*****黄道座標λ[deg]，β[deg]へ変換する*****/
+            geocentric(pt, lamda, B, r, out lam, out beta);
+            //惑星光行差による補正
+            sun(pt, out lambda_s, out r_s);
+            //補正項Δλを求める
+            d_lam = -0.0057 / r_s * Math.Cos((lam - lambda_s) * rad)
+                    - 0.0071 / r * Math.Cos((lam - lamda) * rad);
+            //実際に補正を行う
+            lam += d_lam;
+
+            /*****赤道座標α[rad]，δ[rad]へ変換する*****/
+            //黄道傾角ε[deg]を求める
+            epsilon = obliquity_of_the_ecliptic(pt);
+            //赤経α[rad]を求める
+            alpha = (Math.Cos(beta * rad) * Math.Sin(lam * rad) * Math.Cos(epsilon *rad) - Math.Sin(beta * rad) * Math.Sin(epsilon * rad))
+                        / (Math.Cos(beta * rad) * Math.Cos(lam * rad));	//atanをとる前の値
+            alpha = Math.Atan(alpha);	//α[rad]
+            //αは第Ⅱ，第Ⅲ象限にある
+            if (Math.Cos(lam * rad) < 0) { alpha += PI; }
+            //αを０から２πの範囲に
+            if (alpha > 2 * PI) { alpha -= 2 * PI; }
+            else if (alpha < 0) { alpha += 2 * PI; }
+            //赤緯δ[rad]を求める
+            delta = Math.Cos(beta * rad) * Math.Sin(lam * rad) * Math.Sin(epsilon * rad) + Math.Sin(beta * rad) * Math.Cos(epsilon * PI / 180);	// Math.Asinをとる前の値
+            delta = Math.Asin(delta);
+
+            alpha /= (Math.PI / 180.0);
+            delta /= (Math.PI / 180.0);
+        }
         
+
+
+
         // 以下、自作ライブリラ
 
         /// <summary>
