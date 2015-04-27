@@ -197,24 +197,24 @@ namespace MtLibrary
             // [2] 木星
             sd.Name = "Jupiter";
             Planet.jupiter(pt, out sd.RA, out sd.DEC);
-            sd.Mag = -3.0;
+            sd.Mag = -2.8;
             star_data.Add(sd);
 
             // [3] 土星
             sd.Name = "Saturn";
             Planet.saturn(pt, out sd.RA, out sd.DEC);
-            sd.Mag = -1.0;
+            sd.Mag = -0.5;
             star_data.Add(sd);
 
             // [4] 火星
             sd.Name = "Mars";
             Planet.mars(pt, out sd.RA, out sd.DEC);
-            sd.Mag = -1.0;
+            sd.Mag = -2.0;
             star_data.Add(sd);
 
             // [5] 水星
-            sd.Name = "Mer";
-            Planet.mars(pt, out sd.RA, out sd.DEC); //未実装
+            sd.Name = "Mercury";
+            Planet.mercury(pt, out sd.RA, out sd.DEC); 
             sd.Mag = -1.0;
             star_data.Add(sd);
         }
