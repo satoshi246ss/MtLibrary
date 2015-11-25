@@ -137,14 +137,33 @@ namespace Z_correction_test
         private void button2_Click(object sender, EventArgs e)
         {
             string bs = System.IO.File.ReadAllText(@"S:\satoshi\Lib\bsc5.dat");
-            string s;
+            string[] sad = bs.Split('\n');
+            string s1, s;
 
-            int i = 2;
-            int n = 197;
-            for (i = 1; i < 10; i++)
+            int HR, RAh, RAm,DEsign, DEd, DEm, DEs;
+            double RA, DEC, RAs, Vmag;
+            string Name;
+            for (int i = 0; i < 9110; i++)
             {
-                int stp = (i - 1) * n;
-                s = bs.Substring(stp + 75, 15) + "\n";
+                s1 = sad[i];
+                s = s1.Substring( 0, 4); HR  = int.Parse(s);
+                s = s1.Substring( 4,10); Name = s;
+                s = s1.Substring(75, 2);
+                if (s == "  ") { continue; } // NOVA等の無データ対応
+                RAh = int.Parse(s);
+                s = s1.Substring(77, 2); RAm = int.Parse(s);
+                s = s1.Substring(79, 4); RAs = double.Parse(s);
+                s = s1.Substring(83, 1);
+                DEsign = 1; if (s[0] == '-') { DEsign = -1; }
+                s = s1.Substring(84, 2); DEd = int.Parse(s);
+                s = s1.Substring(86, 2); DEm = int.Parse(s);
+                s = s1.Substring(88, 2); DEs = int.Parse(s);
+                s = s1.Substring(102, 5); Vmag = double.Parse(s);
+
+                RA = 15 * (RAh + RAm / 60.0 + RAs / 3600.0);
+                DEC = DEsign * (DEd + DEm / 60.0 + DEs / 3600.0);
+
+                s = HR.ToString() + " RA:" + RA.ToString() + " DEC:" + DEC.ToString() + " Vmag:" + Vmag.ToString() + " [" + Name +"]";
                 richTextBox1.AppendText(s);
             }
            // s = bs.Substring(stp+5-1, 10) + "\n";
@@ -157,7 +176,7 @@ namespace Z_correction_test
             DateTime dt2 = new DateTime(1978,6,10,21,20,00);
             Planet.Precession_JST(ra0, dec0, dt2, out ra1, out dec1);
 
-            Star.ID = 7;
+            Star.ID = 6;
             Star.cal_azalt();
             int count = Star.Count;
             s = string.Format("Star count:{0} {1} {2} Az:{3} {4}\n", count, Star.ID, Star.Name, Star.Az, Star.Alt);
@@ -188,12 +207,22 @@ namespace Z_correction_test
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string s,s1 = string.Format("ST 02000\r");
+            string s,s1;
 
             Common.Send_cmd_KV1000_init();
-            s=Common.Send_cmd_KV1000(s1);
+            s  = Common.Send_cmd_KV1000(Common.MT2SetPos(30, 40));
+            richTextBox1.AppendText(s);
+
+            s1 = string.Format("ST 02000\r");
+            s  = Common.Send_cmd_KV1000(s1);
             richTextBox1.AppendText(s);
             Common.Send_cmd_KV1000_close();
+
+            double az=0, alt=0, cx=5, cy=7;
+            Planet.cxcy2azalt(cx, cy, 90, 30, 0, 0, 35, 0.0074, 0.0074, ref az, ref alt);
+            Planet.azalt2cxcy(az, alt, 90, 30, 0, 0, 35, 0.0074, 0.0074, ref cx, ref cy);
+            s = "Az,Alt=" + az.ToString() + " " + alt.ToString(); richTextBox1.AppendText(s);
+            s = "cxcy  =" + cx.ToString() + " " + cy.ToString(); richTextBox1.AppendText(s);
         }
 
     }

@@ -12,6 +12,7 @@ namespace MtLibrary
         public double DEC;
         public double Mag;
         public string Name;
+        public int HR;
    }
 
     public class Star
@@ -223,6 +224,44 @@ namespace MtLibrary
             double az, alt;
             Planet.Eq2AzAlt_Yokohama(star_data[ID].RA, star_data[ID].DEC, DateTime.Now, out az, out alt);
             Az = az; Alt = alt;
+        }
+
+        // Bright Star Catalog　約9,000個
+        public static void init_BSC()
+        {
+            init_planet(); //0-5
+
+            string bs = System.IO.File.ReadAllText(@"bsc5.dat");
+            string[] sad = bs.Split('\n');
+            string s1, s;
+
+            int RAh, RAm, DEsign, DEd, DEm, DEs;
+            double RAs;
+
+            for (int i = 0; i < 9110; i++)
+            {
+                s1 = sad[i];
+                s = s1.Substring(0, 4); sd.HR = int.Parse(s);
+                s = s1.Substring(4, 10); sd.Name = s;
+                s = s1.Substring(75, 2);
+                if (s == "  ") { continue; } // NOVA等の無データ対応
+                RAh = int.Parse(s);
+                s = s1.Substring(77, 2); RAm = int.Parse(s);
+                s = s1.Substring(79, 4); RAs = double.Parse(s);
+                s = s1.Substring(83, 1);
+                DEsign = 1; if (s[0] == '-') { DEsign = -1; }
+                s = s1.Substring(84, 2); DEd = int.Parse(s);
+                s = s1.Substring(86, 2); DEm = int.Parse(s);
+                s = s1.Substring(88, 2); DEs = int.Parse(s);
+                s = s1.Substring(102, 5); sd.Mag = double.Parse(s);
+
+                sd.RA = 15 * (RAh + RAm / 60.0 + RAs / 3600.0);
+                sd.DEC = DEsign * (DEd + DEm / 60.0 + DEs / 3600.0);
+
+                Planet.Precession_JST(sd.RA, sd.DEC, DateTime.Now, out sd.RA, out sd.DEC);
+                star_data.Add(sd);
+                //s = sd.HR.ToString() + " RA:" + sd.RA.ToString() + " DEC:" + sd.DEC.ToString() + " Vmag:" + sd.Mag.ToString() + " [" + sd.Name + "]";
+            }
         }
     }
 }

@@ -1124,6 +1124,123 @@ namespace MtLibrary
         // 以下、自作ライブリラ
 
         /// <summary>
+        /// CCD座標(cx,cy)->(az,alt)に変換
+        /// </summary>
+        //
+        //   CCD座標(cx,cy):CCD中心からの誤差座標[pix]    Std. Cam が基準(cx = x-xc, cy = y-yc)
+        //   中心位置(az_c,alt_c)と視野回転(theta_c)
+        //   fl:焦点距離[mm],　ccdpx,ccdpy:ピクセル間隔[mm]
+
+        public static void cxcy2azalt(double cx, double cy,
+               double az_c, double alt_c, int mode, double theta_c,
+               double fl, double ccdpx, double ccdpy,
+               ref double az, ref double alt)
+        {
+            //double rad = Math.PI / 180.0;
+            double cxmm, cymm;
+
+            //ターゲットの方向余弦
+            if (mode == 1) // if (mode == mmEast)
+                {
+                cxmm = -cx * ccdpx; // +ccd -az
+                cymm = +cy * ccdpy; // +ccd +alt
+            }
+            else
+            { //mmWest
+                cxmm = +cx * ccdpx; // +ccd +az
+                cymm = -cy * ccdpy; // +ccd -alt
+            }
+            var v1 = Vector.Build.Dense(3);
+            v1[0] = fl;
+            v1[1] = -cxmm;
+            v1[2] =  cymm;
+            v1 = v1.Normalize(2);// 方向余弦化
+
+            var v2 = Vector.Build.Dense(3);
+            var Rx = Matrix.Build.Dense(3, 3);
+            var Ry = Matrix.Build.Dense(3, 3);
+            var Rz = Matrix.Build.Dense(3, 3);
+            Rx = Rotate_X(-theta_c);// 回転マトリクスをセット
+            Ry = Rotate_Y(-alt_c);
+            Rz = Rotate_Z(-az_c);   // 天球座標系と回転方向が逆なのでマイナス
+
+            v2 = Rz * (Ry * (Rx * v1)); // 順番注意（画像中心をx軸に一致させている状態がスタート）
+
+            // Return Val
+            hori_rev_directional_cosine((Vector)v2 , out az, out alt);
+            //az = Math.Atan2(-v2[1], v2[0]) / rad;
+            //if (az < 0) az += 360;
+            //alt = Math.Asin(v2[2]) / rad;
+        }
+
+        /// <summary>
+        /// 地平座標(az,alt)->CCD座標(cx,cy)に変換
+        /// </summary>
+        //
+        //   CCD座標(cx,cy):CCD中心からの誤差座標[pix]    Std. Cam が基準(cx = x-xc, cy = y-yc)
+        //   中心位置(az_c,alt_c)と視野回転(theta_c)
+        //   fl:焦点距離[mm],　ccdpx,ccdpy:ピクセル間隔[mm]
+
+        public static void azalt2cxcy(double az, double alt,
+               double az_c, double alt_c, int mode, double theta_c,
+               double fl, double ccdpx, double ccdpy,
+               ref double cx, ref double cy)
+        {
+            //ターゲットの方向余弦
+            var v2 = Vector.Build.Dense(3);
+            v2 = hori_directional_cosine(az, alt);
+
+            var v1 = Vector.Build.Dense(3);
+            var Rx = Matrix.Build.Dense(3, 3);
+            var Ry = Matrix.Build.Dense(3, 3);
+            var Rz = Matrix.Build.Dense(3, 3);
+            Rx = Rotate_X(theta_c);// 回転マトリクスをセット
+            Ry = Rotate_Y(alt_c);
+            Rz = Rotate_Z(az_c);   // 天球座標系と回転方向が逆なのでマイナス
+
+            v1 = Rx * (Ry * (Rz * v2)); // 順番注意（画像中心をx軸に一致させている状態が最終）
+
+            // Return Val  cx,cyに変換
+            v1 = v1 * fl / v1[0];
+
+            //ターゲットの方向余弦
+            if (mode == 1) // if (mode == mmEast)
+            {
+                cx =  v1[1] / ccdpx; //cxmm = -cx * ccdpx; // +ccd -az
+                cy =  v1[2] / ccdpy; //cymm = +cy * ccdpy; // +ccd +alt
+            }
+            else
+            { //mmWest
+                cx = -v1[1] / ccdpx; //cxmm = +cx * ccdpx; // +ccd +az
+                cy = -v1[2] / ccdpy; //cymm = -cy * ccdpy; // +ccd -alt
+            }
+        }
+
+        /// <summary>
+        /// CCD座標(cx,cy)<-方向余弦
+        /// </summary>
+        public static void cxcy_rev_directional_cosine(Vector v, ref double az, ref double alt)
+        {
+            const double RAD = Math.PI / 180.0;
+
+            alt = Math.Asin(v[2]) / RAD;
+            az = 0;
+            if (Math.Abs(v[0]) < 1e-9)
+            {
+                if (-v[1] >= 0) az = 90;
+                if (-v[1] < 0) az = -90;
+            }
+            else
+            {
+                az = Math.Atan2(-v[1], v[0]) / RAD;
+            }
+
+            while (az < 0) az += 360;
+            while (az >= 360) az -= 360;
+        }
+
+
+        /// <summary>
         /// 赤道座標->方向余弦
         /// </summary>
         public static Vector eq_directional_cosine(double alfa, double delta)
@@ -1162,7 +1279,7 @@ namespace MtLibrary
             while (alfa >= 360) alfa -= 360;
         }
         /// <summary>
-        /// 地平座標->方向余弦
+        /// 地平座標(deg)->方向余弦
         /// </summary>
         public static Vector hori_directional_cosine(double az, double alt)
         {
@@ -1178,7 +1295,7 @@ namespace MtLibrary
             return (Vector)v;
         }
         /// <summary>
-        /// 地平座標<-方向余弦
+        /// 地平座標(deg)<-方向余弦
         /// </summary>
         public static void hori_rev_directional_cosine(Vector v, out double az, out double alt)
         {
@@ -1202,12 +1319,12 @@ namespace MtLibrary
         /// <summary>
         /// X軸回転
         /// </summary>
-        public static Matrix Rotate_X(double theta)
+        public static Matrix Rotate_X(double theta_deg)
         {
             var m = Matrix.Build.Dense(3, 3);
             const double RAD = Math.PI / 180.0;
-            double sinth = Math.Sin(theta * RAD);
-            double costh = Math.Cos(theta * RAD);
+            double sinth = Math.Sin(theta_deg * RAD);
+            double costh = Math.Cos(theta_deg * RAD);
 
             m[0, 0] = 1;
             m[0, 1] = 0;
@@ -1226,12 +1343,12 @@ namespace MtLibrary
         /// <summary>
         /// Y軸回転
         /// </summary>
-        public static Matrix Rotate_Y(double theta)
+        public static Matrix Rotate_Y(double theta_deg)
         {
             var m = Matrix.Build.Dense(3, 3);
             const double RAD = Math.PI / 180.0;
-            double sinth = Math.Sin(theta * RAD);
-            double costh = Math.Cos(theta * RAD);
+            double sinth = Math.Sin(theta_deg * RAD);
+            double costh = Math.Cos(theta_deg * RAD);
 
             m[0, 0] = costh;
             m[0, 1] = 0;
@@ -1250,12 +1367,12 @@ namespace MtLibrary
         /// <summary>
         /// Z軸回転 [deg]
         /// </summary>
-        public static Matrix Rotate_Z(double theta)
+        public static Matrix Rotate_Z(double theta_deg)
         {
             var m = Matrix.Build.Dense(3, 3);
             const double RAD = Math.PI / 180.0;
-            double sinth = Math.Sin(theta * RAD);
-            double costh = Math.Cos(theta * RAD);
+            double sinth = Math.Sin(theta_deg * RAD);
+            double costh = Math.Cos(theta_deg * RAD);
 
             m[0, 0] = costh;
             m[0, 1] = -sinth;
