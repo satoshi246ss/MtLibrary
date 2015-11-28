@@ -246,5 +246,20 @@ namespace MtLibrary
             return s1;
         }
 
+        public static string MT3SetPos(double az, double alt, double vaz, double valt)
+        {
+            double maz = 0, malt = 0;
+            int region_mode = 0;
+            AzAlt2MA_X1Y1(az, alt, ref maz, ref malt, ref region_mode);
+
+            UInt32 xpos = (UInt32)round_d2i(maz);
+            UInt32 ypos = (UInt32)round_d2i(malt);
+
+            //("WRS DM%05d 4 %05d %05d %05d %05d\r\n"  [39]:WRS DM00006 4 46022 00003 11612 00003\r\n
+            // DM6 Az,Alt位置決めデータ
+            string s1 = string.Format("WRS DM00960 8 {0:00000} {1:00000} {2:00000} {3:00000} {4:00000} {5:00000} {6:00000} {7:00000}\r", TUInt2UShort_L(xpos), TUInt2UShort_U(xpos), TUInt2UShort_L(ypos), TUInt2UShort_U(ypos));
+            return s1;
+        }
+
     }
 }
