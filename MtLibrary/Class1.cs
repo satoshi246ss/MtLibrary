@@ -162,6 +162,21 @@ namespace MtLibrary
         }
 
         /// <summary>
+        /// Int32 -> UShort_U 分解
+        /// </summary>
+        public static UInt16 TInt2UShort_U(Int32 vel)
+        {
+            return (UInt16)(vel >> 16);  // >>16 ->1/256*256
+        }
+        /// <summary>
+        /// Int32 -> UShort_U 分解
+        /// </summary>
+        public static UInt16 TInt2UShort_L(Int32 vel)
+        {
+            return (UInt16)(vel & Convert.ToUInt32("FFFF", 16));
+        }
+
+        /// <summary>
         // 速度データをmmdeg整数化（KV-1000に送信用）
         // 戻り：0.001deg/sec単位の整数
         /// </summary>
@@ -254,10 +269,14 @@ namespace MtLibrary
 
             UInt32 xpos = (UInt32)round_d2i(maz);
             UInt32 ypos = (UInt32)round_d2i(malt);
+            Int32  xvel = (Int32 )round_d2i(vaz);
+            Int32  yvel = (Int32 )round_d2i(valt);
 
             //("WRS DM%05d 4 %05d %05d %05d %05d\r\n"  [39]:WRS DM00006 4 46022 00003 11612 00003\r\n
             // DM6 Az,Alt位置決めデータ
-            string s1 = string.Format("WRS DM00960 8 {0:00000} {1:00000} {2:00000} {3:00000} {4:00000} {5:00000} {6:00000} {7:00000}\r", TUInt2UShort_L(xpos), TUInt2UShort_U(xpos), TUInt2UShort_L(ypos), TUInt2UShort_U(ypos));
+            string s1 = string.Format("WRS DM00960 8 {0:00000} {1:00000} {2:00000} {3:00000} {4:00000} {5:00000} {6:00000} {7:00000}\r"
+                , TUInt2UShort_L(xpos), TUInt2UShort_U(xpos), TUInt2UShort_L(ypos), TUInt2UShort_U(ypos)
+                , TInt2UShort_L(xvel ), TInt2UShort_U(xvel ), TInt2UShort_L(yvel ), TInt2UShort_U(yvel ));
             return s1;
         }
 
