@@ -263,12 +263,15 @@ namespace MtLibrary
 
         public static string MT3SetPos(double az, double alt, double vaz, double valt)
         {
-            double maz = 0, malt = 0;
-            int region_mode = 0;
-            AzAlt2MA_X1Y1(az, alt, ref maz, ref malt, ref region_mode);
-
-            UInt32 xpos = (UInt32)round_d2i(maz);
-            UInt32 ypos = (UInt32)round_d2i(malt);
+            //double maz = 0, malt = 0;
+            //int region_mode = 0;
+            //AzAlt2MA_X1Y1(az, alt, ref maz, ref malt, ref region_mode);
+            
+            if (az  < 0 || az  > 360) return "Out of range az ";
+            if (alt < 0 || alt >  90) return "Out of range alt";
+            
+            UInt32 xpos = (UInt32)round_d2i(az);
+            UInt32 ypos = (UInt32)round_d2i(alt);
             Int32  xvel = (Int32 )round_d2i(vaz);
             Int32  yvel = (Int32 )round_d2i(valt);
 
